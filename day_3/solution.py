@@ -10,7 +10,7 @@ def main_v1():
     """
 
     #Read in target file
-    array = np.genfromtxt('/home/gpedrani/Public/Advent_of_Code/day_3/test.txt', delimiter=',', dtype=str)
+    array = np.genfromtxt('/home/gpedrani/Public/Advent_of_Code/day_3/input.txt', delimiter=',', dtype=str)
 
     #identify characters which are not digits or periods
     x_dim, y_dim = array.shape
@@ -45,30 +45,67 @@ def main_v1():
     hits_rows, hits_cols = np.where(hits == 1)[0], np.where(hits == 1)[1]
     index = len(hits_rows)
     for iter in range(0,index):
-        n = 1 
+
         row, col = hits_rows[iter], hits_cols[iter]
-        number   = int(array[row,col])
-       
-        #scroll through and add digits moving backwards
-        if (re.search(r'\d', array[row,col-1]) != None):
-            while (re.search(r'\d', array[row,col-1]) != None):
-                number = int(array[row,col-1])*10**n + number 
-                col -= 1
-                n   += 1
-        #scroll through and add digits moving forwards
-        elif (re.search(r'\d', array[row,col+1]) != None):
-            while (re.search(r'\d', array[row,col+1]) != None):
-                number = number*10 + int(array[row,col+1])
-                col += 1
-        
-        print(row, col, number)
+
+        #Compare previous row-col pair with current entry
+        ##skip this entry if including it will create duplicate entries for solution
+        if iter != 0:
+            old_row, old_col = hits_rows[iter-1], hits_cols[iter-1] 
+            if row == old_row and old_col == col - 1:
+               number = 0
+            else:
+               number = process_array(row, col, array)
+        elif iter == 0:
+            number = process_array(row, col, array)
  
         #add current number to running total
+        print(number)
         total_sum += number 
 
 
     print("The sum of all part numbers is: %s" % total_sum)
 
 
+#Define Helper programs
+def process_array(row: int, col: int, array: np.array) -> int: 
+    """
+    Parses an array for numbers consecutive numbers with Regex, and concatenates them into a single number. Takes in 
+    an row, column, and array as input; returns a single number as output
+    """
 
+    #define starting digit, and iterable for sigfig counting 
+    number   = int(array[row,col])
+    n = 1
+    max_row, max_col = array.shape
+
+    # check edge case first (where a seed number can move forwards or backwards, choose left most
+    ## digit and continue right as normal
+    if (re.search(r'\d', array[row,col-1]) != None) and (re.search(r'\d', array[row,col+1]) != None):
+        col = col-1
+        number = int(array[row,col])
+        while ((0 <= col <=max_col-1) and (re.search(r'\d', array[row,col+1]) != None)):
+            number = number*10 + int(array[row,col+1])
+            col += 1
+
+    #Case 1: scroll through and add digits moving backwards
+    elif ((1<=col<=max_col) and (re.search(r'\d', array[row,col-1]) != None)):
+        while (re.search(r'\d', array[row,col-1]) != None):
+            number = int(array[row,col-1])*10**n + number 
+            col -= 1
+            n   += 1
+            if col <= 0:
+                break
+
+    #Case 2: scroll through and add digits moving forwards
+    elif ((0<=col<=max_col-1) and re.search(r'\d', array[row,col+1]) != None):
+        while ((re.search(r'\d', array[row,col+1]) != None)):
+            number = number*10 + int(array[row,col+1])
+            col += 1
+            if col > 140:
+                break
+    
+    return number
+
+#run program
 main_v1()
