@@ -60,7 +60,6 @@ def main_v1():
             number = process_array(row, col, array)
  
         #add current number to running total
-        print(number)
         total_sum += number 
 
 
@@ -84,27 +83,24 @@ def process_array(row: int, col: int, array: np.array) -> int:
     if (re.search(r'\d', array[row,col-1]) != None) and (re.search(r'\d', array[row,col+1]) != None):
         col = col-1
         number = int(array[row,col])
-        while ((0 <= col <=max_col-1) and (re.search(r'\d', array[row,col+1]) != None)):
+        while ((re.search(r'\d', array[row,col+1]) != None)):
             number = number*10 + int(array[row,col+1])
             col += 1
 
     #Case 1: scroll through and add digits moving backwards
-    elif ((1<=col<=max_col) and (re.search(r'\d', array[row,col-1]) != None)):
-        while (re.search(r'\d', array[row,col-1]) != None):
+    elif ((re.search(r'\d', array[row,col-1]) != None)):
+        while ((col > 0) and re.search(r'\d', array[row,col-1]) != None):
             number = int(array[row,col-1])*10**n + number 
             col -= 1
             n   += 1
-            if col <= 0:
-                break
 
     #Case 2: scroll through and add digits moving forwards
-    elif ((0<=col<=max_col-1) and re.search(r'\d', array[row,col+1]) != None):
-        while ((re.search(r'\d', array[row,col+1]) != None)):
+    elif ((col != max_col) and (re.search(r'\d', array[row,col+1]) != None)):
+        while ((col+1 != max_col) and (re.search(r'\d', array[row,col+1]) != None)):
             number = number*10 + int(array[row,col+1])
             col += 1
-            if col > 140:
-                break
-    
+
+    print(number)
     return number
 
 #run program
